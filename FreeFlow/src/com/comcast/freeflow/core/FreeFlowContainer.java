@@ -16,8 +16,8 @@
 package com.comcast.freeflow.core;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.freeflow.BuildConfig;
@@ -257,6 +257,17 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		requestLayout();
 	}
 
+	public void dataInvalidatedAndRecalculateScroll() {
+		logLifecycleEvent("Data Invalidated");
+		if (mLayout == null || mAdapter == null) {
+			return;
+		}
+		shouldRecalculateScrollWhenComputingLayout = true;
+		markAdapterDirty = true;
+		stopScrolling();
+		requestLayout();
+	}
+	
 	/**
 	 * The heart of the system. Calls the layout to get the frames needed,
 	 * decides which view should be kept in focus if view transitions are going
@@ -274,8 +285,8 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		markAdapterDirty = false;
 		mLayout.prepareLayout();
 		if (shouldRecalculateScrollWhenComputingLayout) {
-			computeViewPort(mLayout);
-		}
+			computeViewPort(mLayout);}
+		
 		Map<Object, FreeFlowItem> oldFrames = frames;
 
 		frames = new LinkedHashMap<Object, FreeFlowItem>();
@@ -561,13 +572,9 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		}
 		return null;
 	}
-
-	/**
-	 * TODO: This should be renamed to layoutInvalidated, since the layout isn't
-	 * changed
-	 */
-	public void layoutChanged() {
-		logLifecycleEvent("layoutChanged");
+	
+	public void layoutInvalidated() {
+		logLifecycleEvent("layoutInvalidated");
 		markLayoutDirty = true;
 		dispatchDataChanged();
 		requestLayout();
@@ -621,17 +628,16 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 	}
 
-	public LayoutChangeset getViewChanges(Map<Object, FreeFlowItem> oldFrames,
-			Map<Object, FreeFlowItem> newFrames) {
+	public LayoutChangeset getViewChanges(Map<Object, FreeFlowItem> oldFrames, Map<Object, FreeFlowItem> newFrames) {
 		return getViewChanges(oldFrames, newFrames, false);
 	}
 
-	public LayoutChangeset getViewChanges(Map<Object, FreeFlowItem> oldFrames,
-			Map<Object, FreeFlowItem> newFrames, boolean moveEvenIfSame) {
+	public LayoutChangeset getViewChanges(Map<Object, FreeFlowItem> oldFrames, Map<Object, FreeFlowItem> newFrames, boolean moveEvenIfSame) {
 
 		// cleanupViews();
 		LayoutChangeset change = new LayoutChangeset();
-
+		
+		Log.d("FreeFlowContainer", "getViewChanges()");
 		if (oldFrames == null) {
 			markAdapterDirty = false;
 			for (FreeFlowItem freeflowItem : newFrames.values()) {
@@ -655,12 +661,15 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		}
 
 		Iterator<?> it = newFrames.entrySet().iterator();
+		
+		Log.d("FreeFlowContainer", "getViewChanges() - while loop // \\\\ // \\\\ // \\\\");
 		while (it.hasNext()) {
 			Map.Entry<?, ?> m = (Map.Entry<?, ?>) it.next();
 			FreeFlowItem freeflowItem = (FreeFlowItem) m.getValue();
 
 			if (oldFrames.get(m.getKey()) != null) {
 
+				Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "if");
 				FreeFlowItem old = oldFrames.remove(m.getKey());
 				freeflowItem.view = old.view;
 
@@ -675,6 +684,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 							getActualFrame(freeflowItem));
 				}
 			} else {
+				Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "else");
 				change.addToAdded(freeflowItem);
 			}
 
