@@ -179,6 +179,8 @@ public class VGridLayout extends FreeFlowLayoutBase implements FreeFlowLayout {
 		Object lastFrameData = s.getDataAtIndex(s.getDataCount() - 1);
 		FreeFlowItem fd = proxies.get(lastFrameData);
 
+		if(fd == null) {	return 0;}
+		
 		return (fd.frame.top + fd.frame.height());
 	}
 
