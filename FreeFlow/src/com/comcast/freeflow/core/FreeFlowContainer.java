@@ -637,7 +637,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		// cleanupViews();
 		LayoutChangeset change = new LayoutChangeset();
 		
-		Log.d("FreeFlowContainer", "getViewChanges()");
+		//Log.d("FreeFlowContainer", "getViewChanges()");
 		if (oldFrames == null) {
 			markAdapterDirty = false;
 			for (FreeFlowItem freeflowItem : newFrames.values()) {
@@ -662,14 +662,14 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 		Iterator<?> it = newFrames.entrySet().iterator();
 		
-		Log.d("FreeFlowContainer", "getViewChanges() - while loop // \\\\ // \\\\ // \\\\");
+		//Log.d("FreeFlowContainer", "getViewChanges() - while loop // \\\\ // \\\\ // \\\\");
 		while (it.hasNext()) {
 			Map.Entry<?, ?> m = (Map.Entry<?, ?>) it.next();
 			FreeFlowItem freeflowItem = (FreeFlowItem) m.getValue();
 
 			if (oldFrames.get(m.getKey()) != null) {
 
-				Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "if");
+				//Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "if");
 				FreeFlowItem old = oldFrames.remove(m.getKey());
 				freeflowItem.view = old.view;
 
@@ -684,7 +684,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 							getActualFrame(freeflowItem));
 				}
 			} else {
-				Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "else");
+				//Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "else");
 				change.addToAdded(freeflowItem);
 			}
 
