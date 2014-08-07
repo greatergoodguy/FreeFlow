@@ -598,6 +598,10 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	
 	public void layoutInvalidated() {
 		logLifecycleEvent("layoutInvalidated");
+		
+		shouldRecalculateScrollWhenComputingLayout = true;
+		stopScrolling();
+		
 		markLayoutDirty = true;
 		dispatchDataChanged();
 		requestLayout();
