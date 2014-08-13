@@ -39,7 +39,6 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.widget.Checkable;
 import android.widget.EdgeEffect;
 import android.widget.OverScroller;
@@ -852,6 +851,8 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		
+		Log.d("FreeFlowContainer", "onTouchEvent()");
 
 		super.onTouchEvent(event);
 		if (mLayout == null) {
@@ -873,17 +874,25 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 		switch (event.getAction()) {
 		case (MotionEvent.ACTION_DOWN):
+			Log.d("FreeFlowContainer", "onTouchEvent() - Down");
 			touchDown(event);
 			break;
 		case (MotionEvent.ACTION_MOVE):
+			Log.d("FreeFlowContainer", "onTouchEvent() - Move");
 			if (canScroll) {
+				Log.d("FreeFlowContainer", "onTouchEvent() - Move: " + event.getX() + ", " + event.getY());
 				touchMove(event);
+			}
+			else {
+				Log.d("FreeFlowContainer", "onTouchEvent() - Move: cannotScroll");
 			}
 			break;
 		case (MotionEvent.ACTION_UP):
+			Log.d("FreeFlowContainer", "onTouchEvent() - Up");
 			touchUp(event);
 			break;
 		case (MotionEvent.ACTION_CANCEL):
+			Log.d("FreeFlowContainer", "onTouchEvent() - Cancel");
 			touchCancel(event);
 			break;
 		}
