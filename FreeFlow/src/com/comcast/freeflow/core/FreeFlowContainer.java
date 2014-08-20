@@ -50,7 +50,7 @@ import com.comcast.freeflow.utils.ViewUtils;
 
 public class FreeFlowContainer extends AbsLayoutContainer {
 
-	private static final String TAG = "Container";
+	private static final String TAG = "FreeFlowContainer";
 
 	// ViewPool class
 	protected ViewPool viewpool;
@@ -205,7 +205,8 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		ViewConfiguration configuration = ViewConfiguration.get(context);
 		maxFlingVelocity = configuration.getScaledMaximumFlingVelocity();
 		minFlingVelocity = configuration.getScaledMinimumFlingVelocity();
-		overflingDistance = configuration.getScaledOverflingDistance();
+		//overflingDistance = configuration.getScaledOverflingDistance();
+		overflingDistance = 0;
 		/*overscrollDistance = configuration.getScaledOverscrollDistance();*/
 
 		touchSlop = configuration.getScaledTouchSlop();
@@ -265,6 +266,14 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	 * Notifies the attached observers that the underlying data has been changed
 	 * and any View reflecting the data set should refresh itself.
 	 */
+	public void notifyDataSetChanged_Sandbox() {
+		markAdapterDirty = true;
+		markLayoutDirty = true;
+		
+		dataSetChanged = true;
+		requestLayout();
+	}
+	
 	public void notifyDataSetChanged() {
 		dataSetChanged = true;
 		requestLayout();
@@ -467,6 +476,8 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		}
 		removeCallbacks(flingRunnable);
 		resetAllCallbacks();
+		
+		Log.d(TAG,"stopScrolling(): mTouchMode = TOUCH_MODE_REST");
 		mTouchMode = TOUCH_MODE_REST;
 
 		if (mOnTouchModeChangedListener != null) {
@@ -680,7 +691,6 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		// cleanupViews();
 		LayoutChangeset change = new LayoutChangeset();
 		
-		//Log.d("FreeFlowContainer", "getViewChanges()");
 		if (oldFrames == null) {
 			markAdapterDirty = false;
 			for (FreeFlowItem freeflowItem : newFrames.values()) {
@@ -705,14 +715,12 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 		Iterator<?> it = newFrames.entrySet().iterator();
 		
-		//Log.d("FreeFlowContainer", "getViewChanges() - while loop // \\\\ // \\\\ // \\\\");
 		while (it.hasNext()) {
 			Map.Entry<?, ?> m = (Map.Entry<?, ?>) it.next();
 			FreeFlowItem freeflowItem = (FreeFlowItem) m.getValue();
 
 			if (oldFrames.get(m.getKey()) != null) {
 
-				//Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "if");
 				FreeFlowItem old = oldFrames.remove(m.getKey());
 				freeflowItem.view = old.view;
 
@@ -727,7 +735,6 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 							getActualFrame(freeflowItem));
 				}
 			} else {
-				//Log.d("FreeFlowContainer", "getViewChanges() - while loop: " + "else");
 				change.addToAdded(freeflowItem);
 			}
 
@@ -869,7 +876,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		
-		Log.d("FreeFlowContainer", "onTouchEvent()");
+		//Log.d("FreeFlowContainer", "onTouchEvent()");
 
 		super.onTouchEvent(event);
 		if (mLayout == null) {
@@ -891,13 +898,13 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 		switch (event.getAction()) {
 		case (MotionEvent.ACTION_DOWN):
-			Log.d("FreeFlowContainer", "onTouchEvent() - Down");
+			//Log.d("FreeFlowContainer", "onTouchEvent() - Down");
 			touchDown(event);
 			break;
 		case (MotionEvent.ACTION_MOVE):
-			Log.d("FreeFlowContainer", "onTouchEvent() - Move");
+			//Log.d("FreeFlowContainer", "onTouchEvent() - Move");
 			if (canScroll) {
-				Log.d("FreeFlowContainer", "onTouchEvent() - Move: " + event.getX() + ", " + event.getY());
+				//Log.d("FreeFlowContainer", "onTouchEvent() - Move: " + event.getX() + ", " + event.getY());
 				touchMove(event);
 			}
 			else {
@@ -905,11 +912,11 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 			}
 			break;
 		case (MotionEvent.ACTION_UP):
-			Log.d("FreeFlowContainer", "onTouchEvent() - Up");
+			//Log.d("FreeFlowContainer", "onTouchEvent() - Up");
 			touchUp(event);
 			break;
 		case (MotionEvent.ACTION_CANCEL):
-			Log.d("FreeFlowContainer", "onTouchEvent() - Cancel");
+			//Log.d("FreeFlowContainer", "onTouchEvent() - Cancel");
 			touchCancel(event);
 			break;
 		}
@@ -964,6 +971,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		deltaX = event.getX();
 		deltaY = event.getY();
 
+		Log.d(TAG, "touchDown(): mTouchMode = TOUCH_MODE_DOWN");
 		mTouchMode = TOUCH_MODE_DOWN;
 
 		if (mOnTouchModeChangedListener != null) {
@@ -983,11 +991,17 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	}
 
 	protected void touchMove(MotionEvent event) {
+		//Log.d("FreeFlowContainer", "touchMove(): " + event.getX() + ", " + event.getY());
+		
+		Log.d(TAG, "touchMove() ===================================");
+		Log.d(TAG, "touchMove() - viewPortY, oldViewPortY: " + viewPortY + ", " + oldViewPortY);
+		
 		float xDiff = event.getX() - deltaX;
 		float yDiff = event.getY() - deltaY;
 
 		double distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-
+		
+		//Log.d("FreeFlowContainer", "touchMove() - viewPortY, mScrollableHeight: " + viewPortY + ", " + mScrollableHeight);
 		if (mLayout.verticalScrollEnabled()) {
 			if (yDiff > 0 && viewPortY == 0) {
 				if (mEdgeEffectsEnabled) {
@@ -998,6 +1012,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 				return;
 			}
 
+			//if (yDiff < 0 && viewPortY >= mScrollableHeight) {
 			if (yDiff < 0 && viewPortY == mScrollableHeight) {
 				if (mEdgeEffectsEnabled) {
 					float str = (float) distance / getHeight();
@@ -1006,6 +1021,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 				}
 				return;
 			}
+			
 		}
 
 		if (mLayout.horizontalScrollEnabled()) {
@@ -1027,9 +1043,17 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 				return;
 			}
 		}
-
-		if ((mTouchMode == TOUCH_MODE_DOWN || mTouchMode == TOUCH_MODE_REST)
+		
+		if ((mTouchMode == TOUCH_MODE_DOWN || mTouchMode == TOUCH_MODE_REST) 
 				&& distance > touchSlop) {
+
+			if(mTouchMode == TOUCH_MODE_DOWN) {
+				Log.d("FreeFlowContainer", "touchMove(): TOUCH_MODE_DOWN");
+			}
+			else if(mTouchMode == TOUCH_MODE_REST ) {
+				Log.d("FreeFlowContainer", "touchMove(): TOUCH_MODE_REST");
+			}
+			
 			mTouchMode = TOUCH_MODE_SCROLL;
 
 			if (mOnTouchModeChangedListener != null) {
@@ -1040,7 +1064,6 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 				removeCallbacks(mPendingCheckForTap);
 				mPendingCheckForTap = null;
 			}
-
 		}
 
 		if (mTouchMode == TOUCH_MODE_SCROLL) {
@@ -1052,6 +1075,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	}
 
 	protected void touchCancel(MotionEvent event) {
+		Log.d(TAG,"touchCancel(): mTouchMode = TOUCH_MODE_REST");
 		mTouchMode = TOUCH_MODE_REST;
 
 		if (mOnTouchModeChangedListener != null) {
@@ -1100,6 +1124,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 				post(flingRunnable);
 
 			} else {
+				Log.d(TAG,"touchUp() 1: mTouchMode = TOUCH_MODE_REST");
 				mTouchMode = TOUCH_MODE_REST;
 
 				if (mOnTouchModeChangedListener != null) {
@@ -1126,6 +1151,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 					@Override
 					public void run() {
 						mTouchModeReset = null;
+						Log.d(TAG,"touchUp() 2: mTouchMode = TOUCH_MODE_REST");
 						mTouchMode = TOUCH_MODE_REST;
 
 						if (mOnTouchModeChangedListener != null) {
@@ -1156,6 +1182,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 					mOnTouchModeChangedListener.onTouchModeChanged(mTouchMode);
 				}
 			} else {
+				Log.d(TAG,"touchUp() 3: mTouchMode = TOUCH_MODE_REST");
 				mTouchMode = TOUCH_MODE_REST;
 
 				if (mOnTouchModeChangedListener != null) {
@@ -1175,6 +1202,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		@Override
 		public void run() {
 			if (scroller.isFinished()) {
+				Log.d(TAG,"flingRunnable.run(): mTouchMode = TOUCH_MODE_REST");
 				mTouchMode = TOUCH_MODE_REST;
 
 				if (mOnTouchModeChangedListener != null) {
@@ -1229,6 +1257,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	protected void moveViewportBy(float movementX, float movementY,
 			boolean fling) {
 
+		Log.d(TAG, "moveViewportBy() - viewPortY, oldViewPortY: " + viewPortY + ", " + oldViewPortY);
 		if (mLayout.horizontalScrollEnabled()) {
 			viewPortX = (int) (viewPortX - movementX);
 		}
@@ -1240,8 +1269,11 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	}
 
 	protected void moveViewPort(int left, int top, boolean isInFlingMode) {
+
 		viewPortX = left;
 		viewPortY = top;
+		
+		
 		moveViewport(isInFlingMode);
 	}
 
@@ -1252,7 +1284,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	 *            Setting this
 	 */
 	protected void moveViewport(boolean isInFlingMode) {
-
+		
 		mScrollableWidth = mLayout.getContentWidth() - getWidth();
 		if (mScrollableWidth < 0) {
 			mScrollableWidth = 0;
@@ -1283,19 +1315,36 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 			if (mEdgeEffectsEnabled) {
 				if (viewPortX <= 0) {
-					mLeftEdge.onPull(viewPortX / (-overflingDistance));
+					int pullDistance = 0;
+					if(overflingDistance != 0) 
+						pullDistance = viewPortX / (-overflingDistance);
+					
+					mLeftEdge.onPull(pullDistance);
 				} else if (viewPortX >= mScrollableWidth) {
 					mRightEdge.onPull((viewPortX - mScrollableWidth)
 							/ (-overflingDistance));
 				}
 
 				if (viewPortY <= 0) {
-					mTopEdge.onPull(viewPortY / (-overflingDistance));
+					int pullDistance = 0;
+					if(overflingDistance != 0) 
+						pullDistance = viewPortY / (-overflingDistance);
+					
+					mTopEdge.onPull(pullDistance);
+					
 				} else if (viewPortY >= mScrollableHeight) {
-					mBottomEdge.onPull((viewPortY - mScrollableHeight)
-							/ (-overflingDistance));
+					int pullDistance = 0;
+					if(overflingDistance != 0) 
+						pullDistance = (viewPortY - mScrollableHeight) / (-overflingDistance);
+					
+					mBottomEdge.onPull(pullDistance);
 				}
 			}
+		}
+		
+		Log.d(TAG, "moveViewport() - viewPortY, oldViewPortY: " + viewPortY + ", " + oldViewPortY);
+		if(viewPortY < oldViewPortY) {
+			Log.d(TAG, "moveViewport(): " + "KABOOM=/\\=/\\=/\\=KABOOM");
 		}
 
 		LinkedHashMap<Object, FreeFlowItem> oldFrames = new LinkedHashMap<Object, FreeFlowItem>();
@@ -1321,7 +1370,10 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 
 		invalidate();
 
+		oldViewPortY = viewPortY;
 	}
+	
+	int oldViewPortY = 0;
 
 	protected boolean mEdgeEffectsEnabled = true;
 
@@ -1552,6 +1604,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 				handled = performLongPress();
 				// }
 				if (handled) {
+					Log.d(TAG,"CheckForLongPress.run(): mTouchMode = TOUCH_MODE_REST");
 					mTouchMode = TOUCH_MODE_REST;
 
 					if (mOnTouchModeChangedListener != null) {
@@ -1966,5 +2019,4 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 			Log.d("ContainerLifecycleEvent", msg);
 		}
 	}
-
 }

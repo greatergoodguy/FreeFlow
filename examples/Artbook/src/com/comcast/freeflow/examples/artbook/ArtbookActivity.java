@@ -15,31 +15,31 @@
  ******************************************************************************/
 package com.comcast.freeflow.examples.artbook;
 
-import com.comcast.freeflow.core.AbsLayoutContainer;
-import com.comcast.freeflow.core.AbsLayoutContainer.OnItemClickListener;
-import com.comcast.freeflow.core.FreeFlowContainer;
-import com.comcast.freeflow.core.FreeFlowItem;
-import com.comcast.freeflow.core.FreeFlowContainer.OnScrollListener;
-import com.comcast.freeflow.layouts.FreeFlowLayout;
-import com.comcast.freeflow.layouts.HLayout;
-import com.comcast.freeflow.layouts.VGridLayout;
-import com.comcast.freeflow.layouts.VLayout;
-import com.comcast.freeflow.layouts.VGridLayout.LayoutParams;
-import com.comcast.freeflow.examples.artbook.data.DribbbleDataAdapter;
-import com.comcast.freeflow.examples.artbook.layouts.ArtbookLayout;
-import com.comcast.freeflow.examples.artbook.models.DribbbleFeed;
-import com.comcast.freeflow.examples.artbook.models.DribbbleFetch;
-
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Point;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+
+import com.comcast.freeflow.core.AbsLayoutContainer;
+import com.comcast.freeflow.core.AbsLayoutContainer.OnItemClickListener;
+import com.comcast.freeflow.core.FreeFlowContainer;
+import com.comcast.freeflow.core.FreeFlowContainer.OnScrollListener;
+import com.comcast.freeflow.core.FreeFlowItem;
+import com.comcast.freeflow.examples.artbook.data.DribbbleDataAdapter;
+import com.comcast.freeflow.examples.artbook.layouts.ArtbookLayout;
+import com.comcast.freeflow.examples.artbook.models.DribbbleFeed;
+import com.comcast.freeflow.examples.artbook.models.DribbbleFetch;
+import com.comcast.freeflow.layouts.FreeFlowLayout;
+import com.comcast.freeflow.layouts.HLayout;
+import com.comcast.freeflow.layouts.VGridLayout;
+import com.comcast.freeflow.layouts.VLayout;
 
 public class ArtbookActivity extends Activity implements OnClickListener{
 
@@ -58,11 +58,12 @@ public class ArtbookActivity extends Activity implements OnClickListener{
 	FreeFlowLayout[] layouts;
 	int currLayoutIndex = 0;
 	
+	Handler handler = new Handler();
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_artbook);
-		
 
 		container = (FreeFlowContainer) findViewById(R.id.container);
 
@@ -101,8 +102,27 @@ public class ArtbookActivity extends Activity implements OnClickListener{
 		fetch = new DribbbleFetch();
 		
 		fetch.load(this,itemsPerPage , pageIndex);
-
+		
+		handler.post(runnableTicker);
 	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		handler.removeCallbacks(runnableTicker);
+	}
+	
+	Runnable runnableTicker = new Runnable() {
+		int tickCounter = 1;
+		@Override public void run() {
+			Log.d("ArtbookActivity", "tick: " + tickCounter);
+			
+			long delayMillis = 1000;
+			handler.postDelayed(runnableTicker, delayMillis);
+			container.notifyDataSetChanged();
+			tickCounter++;
+		}
+	};
 
 	public void onDataLoaded(DribbbleFeed feed) {
 		Log.d(TAG, "photo: " + feed.getShots().get(0).getImage_teaser_url());
