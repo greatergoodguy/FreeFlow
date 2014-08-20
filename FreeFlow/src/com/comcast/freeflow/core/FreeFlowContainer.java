@@ -1829,7 +1829,6 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		}
 
 		if (dispatchItemClick) {
-
 			handled |= super.performItemClick(view, section, position, id);
 		}
 
