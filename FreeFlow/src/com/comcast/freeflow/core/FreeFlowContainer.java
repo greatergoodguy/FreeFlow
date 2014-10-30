@@ -543,7 +543,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		int i = 0;
 		FreeFlowItem freeflowItem = null;
 		for (FreeFlowItem fd : frames.values()) {
-			Log.d(TAG, "computeViewPort - loop - i, lowestPosition: " + i + ", " + lowestPosition);
+			//Log.d(TAG, "computeViewPort - loop - i, lowestPosition: " + i + ", " + lowestPosition);
 			
 			if (fd.itemSection < lowestSection || (fd.itemSection == lowestSection && fd.itemIndex < lowestPosition)) {
 				data = fd.data;
@@ -639,7 +639,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	}
 	
 	public void layoutInvalidated() {
-		Log.d(TAG, "layoutInvalidated");
+		//Log.d(TAG, "layoutInvalidated");
 		logLifecycleEvent("layoutInvalidated");
 		
 		shouldRecalculateScrollWhenComputingLayout = true;
