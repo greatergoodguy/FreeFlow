@@ -333,7 +333,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		markAdapterDirty = false;
 		mLayout.prepareLayout();
 		if (shouldRecalculateScrollWhenComputingLayout) {
-			computeViewPort(mLayout);}
+			computeViewPort(mLayout, w, h);}
 		
 		Map<Object, FreeFlowItem> oldFrames = frames;
 
@@ -523,7 +523,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	 * @see getViewportLeft
 	 * 
 	 */
-	protected void computeViewPort(FreeFlowLayout newLayout) {
+	protected void computeViewPort(FreeFlowLayout newLayout, int w, int h) {
 		if (mLayout == null || frames == null || frames.size() == 0) {
 			viewPortX = 0;
 			viewPortY = 0;
@@ -540,16 +540,22 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		// layout
 		// TODO: Need to make sure this item is actually being shown in the
 		// viewport and not just in some offscreen buffer
+		int i = 0;
+		FreeFlowItem freeflowItem = null;
 		for (FreeFlowItem fd : frames.values()) {
-			if (fd.itemSection < lowestSection
-					|| (fd.itemSection == lowestSection && fd.itemIndex < lowestPosition)) {
+			Log.d(TAG, "computeViewPort - loop - i, lowestPosition: " + i + ", " + lowestPosition);
+			
+			if (fd.itemSection < lowestSection || (fd.itemSection == lowestSection && fd.itemIndex < lowestPosition)) {
 				data = fd.data;
 				lowestSection = fd.itemSection;
 				lowestPosition = fd.itemIndex;
+				freeflowItem = fd;
 			}
+			
+			i++;
 		}
 
-		FreeFlowItem freeflowItem = newLayout.getFreeFlowItemForItem(data);
+		//FreeFlowItem freeflowItem = newLayout.getFreeFlowItemForItem(data);
 		freeflowItem = FreeFlowItem.clone(freeflowItem);
 		if (freeflowItem == null) {
 			viewPortX = 0;
@@ -557,26 +563,36 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 			return;
 		}
 
+ 		//Log.d(TAG, "computeViewPort");		
 		Rect vpFrame = freeflowItem.frame;
-
-		viewPortX = vpFrame.left;
-		viewPortY = vpFrame.top;
+		
+//		Log.d(TAG, "computeViewPort 1 - viewPortX, viewPortY: " + viewPortX + ", " + viewPortY);
+//
+//		viewPortX = vpFrame.left;
+//		viewPortY = vpFrame.top;
+//		
+//		Log.d(TAG, "computeViewPort 2 - viewPortX, viewPortY: " + viewPortX + ", " + viewPortY);
+		
 		mScrollableWidth = mLayout.getContentWidth() - getWidth();
 		mScrollableHeight = mLayout.getContentHeight() - getHeight();
+		
+//		Log.d(TAG, "computeViewPort - freeflowItem.itemIndex, w, h: " + freeflowItem.itemIndex + ", " + w + ", " + h);
+//		Log.d(TAG, "computeViewPort - mScrollableWidth, mScrollableHeight: " + mScrollableWidth + ", " + mScrollableHeight);
 
 		if (mScrollableWidth < 0) {
-			mScrollableWidth = 0;
-		}
+			mScrollableWidth = 0;}
 		if (mScrollableHeight < 0) {
-			mScrollableHeight = 0;
-		}
-
+			mScrollableHeight = 0;}
+		
+//		Log.d(TAG, "computeViewPort 3 - viewPortX, viewPortY: " + viewPortX + ", " + viewPortY);
+		
 		if (viewPortX > mScrollableWidth)
 			viewPortX = mScrollableWidth;
 
 		if (viewPortY > mScrollableHeight)
 			viewPortY = mScrollableHeight;
-
+		
+//		Log.d(TAG, "computeViewPort 4 - viewPortX, viewPortY: " + viewPortX + ", " + viewPortY);
 	}
 
 	/**
@@ -623,6 +639,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 	}
 	
 	public void layoutInvalidated() {
+		Log.d(TAG, "layoutInvalidated");
 		logLifecycleEvent("layoutInvalidated");
 		
 		shouldRecalculateScrollWhenComputingLayout = true;
@@ -986,8 +1003,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 		float yDiff = event.getY() - deltaY;
 
 		double distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-		
-		//Log.d("FreeFlowContainer", "touchMove() - viewPortY, mScrollableHeight: " + viewPortY + ", " + mScrollableHeight);
+
 		if (mLayout.verticalScrollEnabled()) {
 			if (yDiff > 0 && viewPortY == 0) {
 				if (mEdgeEffectsEnabled) {
