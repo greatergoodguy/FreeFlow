@@ -1916,8 +1916,7 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 			return;
 		}
 
-		FreeFlowItem freeflowItem = mLayout.getFreeFlowItemForItem(section
-				.getDataAtIndex(itemIndex));
+		FreeFlowItem freeflowItem = mLayout.getFreeFlowItemForItem(section.getDataAtIndex(itemIndex));
 		freeflowItem = FreeFlowItem.clone(freeflowItem);
 
 		int newVPX = freeflowItem.frame.left;
@@ -1937,6 +1936,14 @@ public class FreeFlowContainer extends AbsLayoutContainer {
 			moveViewportBy((viewPortX - newVPX), (viewPortY - newVPY), false);
 			invokeOnItemScrollListeners();
 		}
+	}
+	
+	public void scrollToBeginning() {
+		int newViewportX = 0;
+		int newViewportY = 0;
+		
+		moveViewportBy((viewPortX - newViewportX), (viewPortY - newViewportY), false);
+		invokeOnItemScrollListeners();
 	}
 
 	/**
